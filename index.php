@@ -1,6 +1,8 @@
 <?php
 include "inc.php";
-if (isset($_GET["url"]) || $_GET["url"] != ""){
+if (isset($_GET["url"])) {
+if ($_GET["url"] != "") {
+
 if (!url_exists($_GET["url"])) {
   die("404");
 }
@@ -109,7 +111,7 @@ form input[type=submit]{width:5%;}
 } ?>
 </div>
 </div>
-<?php } else { ?>
+<?php } } else { ?>
 <h1 style="font-weight:normal"><b>twtxtE</b>xplorer</h1>
 <div><form method="GET"><input type="url" name="url"><input type="submit"></form></div>
 <?php } ?>
