@@ -114,4 +114,5 @@ form input[type=submit]{width:5%;}
 <?php } } else { ?>
 <h1 style="font-weight:normal"><b>twtxtE</b>xplorer</h1>
 <div><form method="GET"><input type="url" name="url"><input type="submit"></form></div>
-<?php } ?>
+<p><a href="https://github.com/luqaska/twtxtExplorer">Tilde</a>Git<a href="https://github.com/luqaska/twtxtExplorer">Hub</a> - &copy;2022 Luqaska</p>
+<?php }
