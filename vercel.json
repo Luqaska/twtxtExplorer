@@ -1,0 +1,9 @@
+{
+  "builds": [
+    { "src": "*.php", "use": "vercel-php@0.4.0" },
+    { "src": "*.html", "use": "vercel-php@0.4.0" }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.php" }
+  ]
+}
