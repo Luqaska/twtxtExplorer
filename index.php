@@ -177,7 +177,7 @@ form input[type=submit] {
     <?php if (isset($avatar)) { ?>
     <div><a href="<?= $avatar ?>" target="_blank"><img style="width:50px;height:50px;margin-right:10px;border:3px solid black;border-radius:100%" src="<?= $avatar ?>"></a></div>
     <?php } ?>
-    <h2><?= $user ?></h2>
+    <h2><?= $user ?><?= $checkmark ?></h2>
   </div>
   <p><?php if (isset($description)) {
     echo $description . " ";
