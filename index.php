@@ -126,14 +126,14 @@ if ($user == "") {
   $user = $_GET["url"];
 }
 
-/* Checkmark
+// Checkmark
 $check = explode("\n", file_get_contents("https://raw.githubusercontent.com/luqaska/twtxt-verified/main/list.txt"));
 $checkmark = "";
 foreach($check as $u) {
   if (($u == $user)) {
     $checkmark = '<span style="margin-left:5px" title="Verified by devs">☑️</span>';
   }
-} */ ?>
+} ?>
 <title><?= $user ?> | twtxtExplorer</title>
 <style>
 body {
@@ -168,7 +168,7 @@ form input[type=submit] {
 </head>
 <body>
 <div><form method="GET">
-  <a href="?" id="button" title="twtxtExplorer v1.2.0">twtxtE</a>
+  <a href="?" id="button" title="twtxtExplorer v1.2.1">twtxtE</a>
   <input type="url" name="url" placeholder="URL" value="<?= $_GET["url"] ?>">
   <input type="submit" value="Go!">
 </form></div>
