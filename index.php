@@ -6,18 +6,29 @@ include "inc.php";
 if (isset($_GET["url"]) && ($_GET["url"] != "")) {
 
 if (!url_exists($_GET["url"])) {
-  die("404");
+  die("404. Feed not found");
+}
+
+/* Check if URL contents a text */
+file_put_contents(".env", file_get_contents($_GET["url"]));
+$mime = mime_content_type(".env");
+unlink(".env");
+if ($mime != "text/plain") {
+  die("Invalid document. It isn't a text".$mime);
 }
 
 
 // á[ ]á => á\[\s\]á
+// Feed parser
 $feed = file_get_contents($_GET["url"]);
 $feed = explode("\n", $feed);
 $dates = [];
 $posts = [];
-//$i = 0;
 foreach($feed as $line) {
   if (str_starts_with($line, "#")) {
+    // Link pattern
+    $link_pattern = "/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/";
+
     //$line = preg_replace("/\s/", "", $line);
     $line = preg_replace("/\s+/", "á[ ]á", $line);
     $line = preg_replace("/\t+/", "á[ ]á", $line);
@@ -34,8 +45,12 @@ foreach($feed as $line) {
 
     if (isset($nick) && isset($url)) {
       $user = parse_url($url);
+      if (strtolower(parse_url($_GET["url"])["host"]) != strtolower($user["host"])) {
+        die("sus feed");
+      }
       $user = "@" . $nick . "@" . $user["host"];
     }
+    
 
 
     /* Avatar */
@@ -71,32 +86,54 @@ foreach($feed as $line) {
     if (str_starts_with($line, "#á[ ]ádescriptioná[ ]á=")) {
       $description = preg_replace("/#á\[\s\]ádescriptioná\[\s\]á=/", "", $line);
       $description = preg_replace("/á\[\s\]á/", " ", $description);
-      $description = preg_replace("/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/", "<a href='$1'>$1</a>", $description);
+      $description = preg_replace("/\t/", " ", $description);
       $description = explode(" ", $description);
-      foreach($description as $num => $message) {
-        if ($message == "") {
+      foreach($description as $num => $section) {
+        if ($section == "") {
           unset($description[$num]);
         }
-      } 
+        if (preg_match($link_pattern, $section)) {
+          $description[$num] = preg_replace($link_pattern, "<a href='$1'>$1</a>", $section);
+        } else {
+          $description[$num] = htmlentities($section);
+        }
+      }
       $description = implode(" ", $description);
-      $description = preg_replace("/\t/", " ", $description);
     }
   } elseif($line == "") {
   } else {
     $entry = explode("\t", $line, 2);
     array_push($dates, $entry[0]);
+    $entry[1] = preg_replace("/\t/", " ", $entry[1]);
     $entry[1] = explode(" ", $entry[1]);
-    foreach($entry[1] as $num => $post) {
-      if ($post == "") {
+    foreach($entry[1] as $num => $section) {
+      if ($section == "") {
         unset($entry[1][$num]);
       }
-    } 
+      if (preg_match($link_pattern, $section)) {
+        $entry[1][$num] = preg_replace($link_pattern, "<a href='$1'>$1</a>", $section);
+      } else {
+        $entry[1][$num] = htmlentities($section);
+      }
+    }
     $entry[1] = implode(" ", $entry[1]);
-    $entry[1] = preg_replace("/\t/", " ", $entry[1]);
     array_push($posts, $entry[1]);
     //print_r($dates);
   }
-} ?>
+}
+
+if ($user == "") {
+  $user = $_GET["url"];
+}
+
+/* Checkmark
+$check = explode("\n", file_get_contents("https://raw.githubusercontent.com/luqaska/twtxt-verified/main/list.txt"));
+$checkmark = "";
+foreach($check as $u) {
+  if (($u == $user)) {
+    $checkmark = '<span style="margin-left:5px" title="Verified by devs">☑️</span>';
+  }
+} */ ?>
 <title><?= $user ?> | twtxtExplorer</title>
 <style>
 body {
@@ -131,19 +168,19 @@ form input[type=submit] {
 </head>
 <body>
 <div><form method="GET">
-  <a href="?" id="button" title="twtxtExplorer v1.1.0">twtxtE</a>
+  <a href="?" id="button" title="twtxtExplorer v1.2.0">twtxtE</a>
   <input type="url" name="url" placeholder="URL" value="<?= $_GET["url"] ?>">
   <input type="submit" value="Go!">
 </form></div>
 <div id="header" style="text-align:center">
   <div style="display:flex;align-items:center;justify-content:center">
     <?php if (isset($avatar)) { ?>
-    <div><a href="<?= $avatar ?>" target="_blank"><img style="width:50px;margin-right:10px;border:3px solid black;border-radius:100%" src="<?= $avatar ?>"></a></div>
+    <div><a href="<?= $avatar ?>" target="_blank"><img style="width:50px;height:50px;margin-right:10px;border:3px solid black;border-radius:100%" src="<?= $avatar ?>"></a></div>
     <?php } ?>
     <h2><?= $user ?></h2>
   </div>
   <p><?php if (isset($description)) {
-    echo htmlentities($description) . " ";
+    echo $description . " ";
   } ?><a href="<?= $_GET["url"] ?>"><button>Follow</button></a></p>
   <?php if (isset($followers) && isset($following)) { ?>
   <div><b><?= $followers ?></b> followers - <b><?= $following ?></b> following</div>
