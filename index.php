@@ -1,7 +1,9 @@
+<!DOCTYPE html>
+<html>
+<head>
 <?php
 include "inc.php";
-if (isset($_GET["url"])) {
-if ($_GET["url"] != "") {
+if (isset($_GET["url"]) && ($_GET["url"] != "")) {
 
 if (!url_exists($_GET["url"])) {
   die("404");
@@ -70,49 +72,102 @@ foreach($feed as $line) {
       $description = preg_replace("/#á\[\s\]ádescriptioná\[\s\]á=/", "", $line);
       $description = preg_replace("/á\[\s\]á/", " ", $description);
       $description = preg_replace("/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/", "<a href='$1'>$1</a>", $description);
+      $description = explode(" ", $description);
+      foreach($description as $num => $message) {
+        if ($message == "") {
+          unset($description[$num]);
+        }
+      } 
+      $description = implode(" ", $description);
+      $description = preg_replace("/\t/", " ", $description);
     }
   } elseif($line == "") {
   } else {
     $entry = explode("\t", $line, 2);
     array_push($dates, $entry[0]);
+    $entry[1] = explode(" ", $entry[1]);
+    foreach($entry[1] as $num => $post) {
+      if ($post == "") {
+        unset($entry[1][$num]);
+      }
+    } 
+    $entry[1] = implode(" ", $entry[1]);
+    $entry[1] = preg_replace("/\t/", " ", $entry[1]);
     array_push($posts, $entry[1]);
-    print_r($dates);
+    //print_r($dates);
   }
 } ?>
+<title><?= $user ?> | twtxtExplorer</title>
 <style>
-form button{width:5%;background:black;color:white;}
-form input[type=url]{width:90%;}
-form input[type=submit]{width:5%;}
-.post{border:solid 1px black;margin:5px 0;}
-.top{font-size:small;font-family:sans-serif;}
-.content{font-size:medium;padding:3px;}
+body {
+  text-align:center;
+}
+a#button {
+  padding:1px;
+  background:black;
+  color:white;
+  font-decoration:none;
+}
+form input[type=url] {
+  width:50%;
+}
+form input[type=submit] {
+  width:50px;
+}
+.post {
+  border:solid 1px black;
+  margin:5px 0;
+  padding:8px;
+  text-align:initial;
+}
+.top {
+  font-size:small;
+  font-family:sans-serif;
+}
+.content {
+  font-size:medium;
+}
 </style>
-<div><form method="GET"><button title="twtxtExplorer v1.0.0">twtxtE</button><input type="url" name="url" value="<?= $_GET["url"] ?>"><input type="submit" value="Go!"></form></div>
-<div id="header" style="width:100%;text-align:center">
+</head>
+<body>
+<div><form method="GET">
+  <a href="?" id="button" title="twtxtExplorer v1.1.0">twtxtE</a>
+  <input type="url" name="url" placeholder="URL" value="<?= $_GET["url"] ?>">
+  <input type="submit" value="Go!">
+</form></div>
+<div id="header" style="text-align:center">
   <div style="display:flex;align-items:center;justify-content:center">
     <?php if (isset($avatar)) { ?>
     <div><a href="<?= $avatar ?>" target="_blank"><img style="width:50px;margin-right:10px;border:3px solid black;border-radius:100%" src="<?= $avatar ?>"></a></div>
     <?php } ?>
     <h2><?= $user ?></h2>
   </div>
-  <?php if (isset($description)) {
-    echo "<p>" . htmlentities($description) . "</p>";
-  }
-  if (isset($followers) && isset($following)) { ?>
+  <p><?php if (isset($description)) {
+    echo htmlentities($description) . " ";
+  } ?><a href="<?= $_GET["url"] ?>"><button>Follow</button></a></p>
+  <?php if (isset($followers) && isset($following)) { ?>
   <div><b><?= $followers ?></b> followers - <b><?= $following ?></b> following</div>
   <?php } ?>
 </div>
 <div style="margin:10px 25%">
-<?php $i=0; foreach($posts as $post) {
-    $post = htmlentities($post);
-    //$post = preg_replace("/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/", "<a href='$1'>$1</a>", $post);
-  echo '<div class="post"><div class="top">' . date(DATE_RSS, strtotime($dates[$i])) . '</div><div class="content">' . $post . '</div></div>';
+<?php
+$dates = array_reverse($dates);
+$posts = array_reverse($posts);
+foreach($posts as $num => $post) {
+  $post = htmlentities($post);
+  echo '<div class="post"><div class="top">' . date(DATE_RSS, strtotime($dates[$num])) . '</div><div class="content">' . $post . '</div></div>';
   $i++;
 } ?>
 </div>
 </div>
-<?php } } else { ?>
+<div style="margin-top:10px">&copy;2022 Luqaska<br><a href="https://github.com/luqaska/twtxtExplorer">GitHub</a></div>
+<?php } else { ?>
+<title>twtxtExplorer</title>
+</head>
+<body>
 <h1 style="font-weight:normal"><b>twtxtE</b>xplorer</h1>
-<div><form method="GET"><input type="url" name="url"><input type="submit"></form></div>
-<p><a href="https://github.com/luqaska/twtxtExplorer">Tilde</a>Git<a href="https://github.com/luqaska/twtxtExplorer">Hub</a> - &copy;2022 Luqaska</p>
-<?php }
+<div><form method="GET"><input type="url" name="url" placeholder="URL"><input type="submit"></form></div>
+<p>&copy;2022 <a href="https://lucas.koyu.space">Luqaska</a> - <a href="https://github.com/luqaska/twtxtExplorer">GitHub</a></p>
+<?php } ?>
+</body>
+</html>
