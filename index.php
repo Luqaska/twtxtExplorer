@@ -156,7 +156,6 @@ $posts = array_reverse($posts);
 foreach($posts as $num => $post) {
   $post = htmlentities($post);
   echo '<div class="post"><div class="top">' . date(DATE_RSS, strtotime($dates[$num])) . '</div><div class="content">' . $post . '</div></div>';
-  $i++;
 } ?>
 </div>
 </div>
