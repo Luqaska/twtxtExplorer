@@ -1,0 +1,5 @@
+language = "php"
+run = "php -S 0.0.0.0:8080"
+
+[nix]
+channel = "stable-21_11"
